@@ -1,0 +1,707 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>API Hub 소개</title>
+<style>
+  :root {
+    --bg: #f4f5f7; --panel: #ffffff; --panel-2: #f7f8fa; --text: #15171c; --muted: #5d6471; --line: #e2e5ea;
+    --accent: #2c6bed; --accent-soft: #e7eefe;
+    --ok: #1c9a52; --ok-soft: #e2f4e9; --bad: #d23f3f; --bad-soft: #fce7e7; --warn: #b8740a; --warn-soft: #fcf0d9;
+    --shadow: 0 1px 2px rgba(16, 24, 40, .05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0e1014; --panel: #161920; --panel-2: #1b1f27; --text: #e7e9ee; --muted: #9aa1ad; --line: #2a2f39;
+      --accent: #6f9cff; --accent-soft: #1b2640;
+      --ok: #41cc7d; --ok-soft: #13291d; --bad: #ff6f6f; --bad-soft: #331a1c; --warn: #f0b14a; --warn-soft: #33270f;
+      --shadow: none;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 15px/1.6 "Pretendard", "Malgun Gothic", "Apple SD Gothic Neo", system-ui, sans-serif; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 16px 56px; }
+  a { color: var(--accent); }
+
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 16px 0; }
+  .logo { font-weight: 800; font-size: 17px; letter-spacing: -.01em; }
+  .logo span { color: var(--accent); }
+  nav { display: flex; gap: 4px; flex-wrap: wrap; }
+  nav a { text-decoration: none; color: var(--muted); padding: 6px 12px; border-radius: 8px; font-size: 14px; }
+  nav a.on { background: var(--panel); color: var(--text); border: 1px solid var(--line); }
+  nav a:hover { color: var(--text); }
+
+  .hero { padding: 36px 0 12px; max-width: 760px; }
+  .eyebrow { color: var(--accent); font-weight: 700; font-size: 14px; margin: 0 0 6px; }
+  .hero h1 { font-size: 34px; line-height: 1.3; margin: 0 0 14px; letter-spacing: -.02em; }
+  .lead { font-size: 17px; color: var(--muted); margin: 0; }
+  .lead b { color: var(--text); }
+
+  h2 { font-size: 22px; margin: 48px 0 6px; letter-spacing: -.01em; }
+  .h2-sub { color: var(--muted); margin: 0 0 18px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); }
+
+  /* 왜 필요한가요 */
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .cmp { padding: 20px 22px; }
+  .cmp .tag { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 10px; border-radius: 999px; }
+  .cmp.before .tag { background: var(--bad-soft); color: var(--bad); }
+  .cmp.after .tag { background: var(--accent-soft); color: var(--accent); }
+  .cmp h3 { font-size: 18px; margin: 10px 0 12px; }
+  .cmp svg { width: 100%; height: auto; display: block; margin-bottom: 8px; }
+  .points { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+  .points li { display: grid; grid-template-columns: 22px 1fr; gap: 8px; }
+  .points li::before { content: ""; width: 18px; height: 18px; border-radius: 50%; margin-top: 3px; }
+  .before .points li::before { background: var(--bad-soft); box-shadow: inset 0 0 0 5px var(--bad-soft), inset 0 0 0 9px var(--bad); }
+  .after .points li::before { background: var(--ok-soft); box-shadow: inset 0 0 0 5px var(--ok-soft), inset 0 0 0 9px var(--ok); }
+  .points b { display: block; }
+  .points span { color: var(--muted); font-size: 14px; }
+  .analogy { margin-top: 14px; padding: 16px 20px; display: flex; gap: 14px; align-items: flex-start; }
+  .analogy .q { font-size: 30px; line-height: 1; color: var(--accent); font-weight: 800; }
+  .analogy p { margin: 0; }
+  .analogy small { color: var(--muted); }
+
+  .d-line { stroke-width: 2; fill: none; }
+  .d-box { stroke-width: 1.5; }
+  .d-text { font: 600 14px "Pretendard", "Malgun Gothic", sans-serif; fill: var(--text); }
+  .d-sub { font: 12px "Pretendard", "Malgun Gothic", sans-serif; fill: var(--muted); }
+
+  /* 직접 해보기 */
+  .try { display: grid; grid-template-columns: 340px 1fr; gap: 14px; align-items: start; }
+  .controls { padding: 18px; display: grid; gap: 16px; }
+  .field-label { font-size: 13px; font-weight: 700; color: var(--muted); margin-bottom: 6px; display: block; }
+  select, input[type=text], textarea {
+    width: 100%; font: inherit; font-size: 14px; color: var(--text); background: var(--panel-2);
+    border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+  textarea { resize: vertical; min-height: 70px; }
+  .who { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; font-size: 13px; }
+  .tasks { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .task { text-align: left; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel);
+          color: var(--text); font: inherit; cursor: pointer; }
+  .task b { display: block; font-size: 14px; }
+  .task span { font-size: 12px; color: var(--muted); }
+  .task.on { border-color: var(--accent); background: var(--accent-soft); }
+  .task:hover { border-color: var(--accent); }
+  .inputs { display: grid; gap: 10px; }
+  .send { width: 100%; padding: 12px; border: 0; border-radius: 10px; background: var(--accent); color: #fff;
+          font: inherit; font-weight: 700; font-size: 16px; cursor: pointer; }
+  .send:disabled { opacity: .5; cursor: wait; }
+  .btn-s { border: 1px solid var(--line); background: var(--panel); color: var(--text); border-radius: 8px;
+           padding: 4px 10px; font: inherit; font-size: 12px; cursor: pointer; white-space: nowrap; }
+  .btn-s:hover { border-color: var(--bad); color: var(--bad); }
+  .btn-s.restore:hover { border-color: var(--ok); color: var(--ok); }
+
+  .stage { padding: 22px 22px 18px; }
+  .flow { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); margin: 6px 0 22px; }
+  .flow .track { position: absolute; left: 16.66%; right: 16.66%; top: 38px; height: 2px;
+                 background: repeating-linear-gradient(90deg, var(--line) 0 8px, transparent 8px 14px); }
+  .node { position: relative; z-index: 1; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .node .ico { width: 76px; height: 76px; border-radius: 20px; display: grid; place-items: center;
+               background: var(--panel-2); border: 2px solid var(--line); color: var(--muted); transition: all .25s; }
+  .node .ico svg { width: 34px; height: 34px; }
+  .node b { font-size: 15px; }
+  .node small { color: var(--muted); font-size: 12px; min-height: 18px; }
+  .node.active .ico { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); transform: scale(1.06); }
+  .node.fail .ico { border-color: var(--bad); color: var(--bad); background: var(--bad-soft); }
+  .node.gw .ico { border-style: solid; }
+  .packet { position: absolute; top: 38px; left: 16.66%; transform: translate(-50%, -50%); z-index: 2;
+            align-self: start; justify-self: start; height: auto; line-height: 18px;
+            background: var(--accent); color: #fff; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px;
+            white-space: nowrap; opacity: 0; transition: left .8s cubic-bezier(.4, 0, .2, 1), opacity .2s, background .2s; }
+  .packet.show { opacity: 1; }
+  .packet.company { background: var(--warn); }
+  .packet.result { background: var(--ok); }
+  .packet.error { background: var(--bad); }
+
+  .steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .step { display: grid; grid-template-columns: 30px 1fr; gap: 10px; padding: 10px 12px; border-radius: 10px;
+          border: 1px solid transparent; transition: all .25s; opacity: .45; }
+  .step .n { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 700;
+             background: var(--panel-2); border: 1px solid var(--line); color: var(--muted); }
+  .step .t { font-weight: 700; }
+  .step .d { color: var(--muted); font-size: 14px; min-height: 0; }
+  .step.active { opacity: 1; background: var(--accent-soft); border-color: var(--accent); }
+  .step.active .n { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .step.done { opacity: 1; }
+  .step.done .n { background: var(--ok); color: #fff; border-color: var(--ok); }
+  .step.skip { opacity: .75; }
+  .step.skip .n { background: var(--panel-2); color: var(--muted); }
+  .step.fail { opacity: 1; background: var(--bad-soft); border-color: var(--bad); }
+  .step.fail .n { background: var(--bad); color: #fff; border-color: var(--bad); }
+  .step.fail .d { color: var(--bad); }
+
+  .result { margin-top: 14px; padding: 20px 22px; }
+  .result-head { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: baseline; margin-bottom: 12px; }
+  .result-head h3 { margin: 0; font-size: 17px; }
+  .facts { display: flex; gap: 6px; flex-wrap: wrap; }
+  .fact { font-size: 12px; padding: 2px 10px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--line); color: var(--muted); }
+  .fact.good { background: var(--ok-soft); color: var(--ok); border-color: transparent; }
+  .res-title { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+  .kv { display: grid; grid-template-columns: 110px 1fr; gap: 6px 12px; font-size: 14px; }
+  .kv span { color: var(--muted); }
+  .big-num { font-size: 30px; font-weight: 800; letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
+  .quote { padding: 12px 14px; border-radius: 10px; background: var(--panel-2); border: 1px solid var(--line); }
+  .quote + .quote { margin-top: 8px; }
+  .quote small { display: block; color: var(--muted); font-size: 12px; margin-bottom: 2px; }
+  .pill { display: inline-block; font-size: 13px; padding: 1px 10px; border-radius: 999px; font-weight: 600; }
+  .pill.ok { background: var(--ok-soft); color: var(--ok); }
+  .pill.warn { background: var(--warn-soft); color: var(--warn); }
+  .pill.bad { background: var(--bad-soft); color: var(--bad); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap; }
+  th { font-size: 12px; color: var(--muted); font-weight: 600; background: var(--panel-2); }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tr:last-child td { border-bottom: 0; }
+  .placeholder { color: var(--muted); text-align: center; padding: 26px 10px; }
+  .errmsg { color: var(--bad); font-weight: 600; }
+
+  details.dev { margin-top: 14px; }
+  details.dev summary { cursor: pointer; color: var(--muted); font-size: 14px; }
+  .devgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+  .devbox { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .devbox h4 { margin: 0; padding: 8px 12px; font-size: 13px; background: var(--panel-2); border-bottom: 1px solid var(--line); }
+  .devbox pre { margin: 0; padding: 10px 12px; font: 12px/1.5 Consolas, "D2Coding", monospace; overflow: auto; max-height: 260px;
+                white-space: pre-wrap; word-break: break-all; }
+
+  .log { padding: 4px 0; overflow-x: auto; }
+  .next { margin-top: 40px; padding: 20px 22px; display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .next p { margin: 0; color: var(--muted); }
+  .next a { text-decoration: none; font-weight: 700; }
+
+  @media (max-width: 900px) {
+    .compare, .try, .devgrid { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 27px; }
+  }
+  @media (max-width: 520px) {
+    .node .ico { width: 58px; height: 58px; border-radius: 16px; }
+    .flow .track, .packet { top: 29px; }
+    .node small { display: none; }
+    .tasks { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<!-- 아이콘 정의 -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-person" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-server" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="14" width="18" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="7" cy="6.5" r="1" fill="currentColor"/><circle cx="7" cy="17.5" r="1" fill="currentColor"/></symbol>
+  <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 19h10a4.5 4.5 0 0 0 .6-8.96A6 6 0 0 0 6.1 9.2 5 5 0 0 0 7 19z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 12h9M18 12v3M21 12v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+</svg>
+
+<div class="wrap">
+  <div class="topbar">
+    <div class="logo">API <span>Hub</span></div>
+    <nav>
+      <a class="on" href="/intro">소개</a>
+      <a href="/dashboard">트래픽 시뮬레이션</a>
+      <a href="/docs" target="_blank">API 문서</a>
+    </nav>
+  </div>
+
+  <section class="hero">
+    <p class="eyebrow">사내 통합 API 게이트웨이</p>
+    <h1>외부 서비스 이용,<br>이제 회사 창구 하나로</h1>
+    <p class="lead">번역, 환율 조회, AI 요약 같은 외부 서비스를 쓰려면 <b>API 키</b>라는 비밀번호가 필요합니다.
+      지금까지는 이 키를 여러 사람이 나눠 썼습니다. 앞으로는 <b>게이트웨이가 키를 대신 보관하고,
+      직원 여러분의 요청을 외부 서비스에 대신 전달</b>합니다.</p>
+  </section>
+
+  <h2>왜 필요한가요?</h2>
+  <p class="h2-sub">같은 외부 서비스를 쓰더라도, 키를 누가 가지고 있느냐에 따라 달라집니다.</p>
+  <div class="compare">
+    <div class="card cmp before">
+      <span class="tag">지금</span>
+      <h3>회사 키를 여러 사람이 나눠 씁니다</h3>
+      <svg viewBox="0 0 520 220" role="img" aria-label="직원 네 명이 각자 회사 키로 외부 서비스에 직접 접속하는 그림">
+        <g style="color:var(--muted)">
+          <use href="#i-person" x="30" y="18" width="34" height="34"/>
+          <use href="#i-person" x="30" y="68" width="34" height="34"/>
+          <use href="#i-person" x="30" y="118" width="34" height="34"/>
+          <use href="#i-person" x="30" y="168" width="34" height="34"/>
+        </g>
+        <g class="d-line" stroke="var(--bad)" stroke-opacity=".55">
+          <path d="M72 35 L370 110"/><path d="M72 85 L370 110"/><path d="M72 135 L370 110"/><path d="M72 185 L370 110"/>
+        </g>
+        <g style="color:var(--bad)">
+          <rect x="198" y="58" width="30" height="22" rx="6" fill="var(--bad-soft)"/><use href="#i-key" x="203" y="59" width="20" height="20"/>
+          <rect x="202" y="88" width="30" height="22" rx="6" fill="var(--bad-soft)"/><use href="#i-key" x="207" y="89" width="20" height="20"/>
+          <rect x="202" y="113" width="30" height="22" rx="6" fill="var(--bad-soft)"/><use href="#i-key" x="207" y="114" width="20" height="20"/>
+          <rect x="198" y="140" width="30" height="22" rx="6" fill="var(--bad-soft)"/><use href="#i-key" x="203" y="141" width="20" height="20"/>
+        </g>
+        <rect class="d-box" x="370" y="78" width="130" height="64" rx="12" fill="var(--panel-2)" stroke="var(--line)"/>
+        <text class="d-text" x="435" y="106" text-anchor="middle">외부 서비스</text>
+        <text class="d-sub" x="435" y="126" text-anchor="middle">번역 · 환율 · AI</text>
+      </svg>
+      <ul class="points">
+        <li><div><b>키가 메신저와 메일로 돌아다닙니다</b><span>한 번 퍼진 키는 누가 가지고 있는지 알 수 없습니다.</span></div></li>
+        <li><div><b>퇴사자도 계속 쓸 수 있습니다</b><span>막으려면 회사 키를 바꾸고 모두에게 다시 나눠줘야 합니다.</span></div></li>
+        <li><div><b>누가 얼마나 썼는지 모릅니다</b><span>요금이 많이 나와도 원인을 찾기 어렵습니다.</span></div></li>
+        <li><div><b>한 사람이 많이 쓰면 모두가 막힙니다</b><span>외부 서비스에는 사용 한도가 있기 때문입니다.</span></div></li>
+      </ul>
+    </div>
+
+    <div class="card cmp after">
+      <span class="tag">게이트웨이 도입 후</span>
+      <h3>회사 키는 게이트웨이만 가지고 있습니다</h3>
+      <svg viewBox="0 0 520 220" role="img" aria-label="직원 네 명이 게이트웨이에 요청하고 게이트웨이만 회사 키로 외부 서비스에 접속하는 그림">
+        <g style="color:var(--muted)">
+          <use href="#i-person" x="20" y="18" width="34" height="34"/>
+          <use href="#i-person" x="20" y="68" width="34" height="34"/>
+          <use href="#i-person" x="20" y="118" width="34" height="34"/>
+          <use href="#i-person" x="20" y="168" width="34" height="34"/>
+        </g>
+        <g class="d-line" stroke="var(--accent)" stroke-opacity=".6">
+          <path d="M62 35 L200 110"/><path d="M62 85 L200 110"/><path d="M62 135 L200 110"/><path d="M62 185 L200 110"/>
+        </g>
+        <text class="d-sub" x="92" y="214">각자 사원 키 사용</text>
+        <rect class="d-box" x="200" y="70" width="136" height="80" rx="14" fill="var(--accent-soft)" stroke="var(--accent)"/>
+        <text class="d-text" x="268" y="104" text-anchor="middle">게이트웨이</text>
+        <text class="d-sub" x="268" y="126" text-anchor="middle">회사 키 보관</text>
+        <path class="d-line" d="M336 110 L392 110" stroke="var(--ok)"/>
+        <g style="color:var(--ok)">
+          <rect x="349" y="99" width="30" height="22" rx="6" fill="var(--ok-soft)"/><use href="#i-key" x="354" y="100" width="20" height="20"/>
+        </g>
+        <rect class="d-box" x="392" y="78" width="118" height="64" rx="12" fill="var(--panel-2)" stroke="var(--line)"/>
+        <text class="d-text" x="451" y="106" text-anchor="middle">외부 서비스</text>
+        <text class="d-sub" x="451" y="126" text-anchor="middle">번역 · 환율 · AI</text>
+      </svg>
+      <ul class="points">
+        <li><div><b>회사 키는 서버 한 곳에만 있습니다</b><span>직원은 회사 키를 볼 수도, 옮길 수도 없습니다.</span></div></li>
+        <li><div><b>직원마다 개인 사원 키를 받습니다</b><span>퇴사하면 그 사람의 키만 끄면 끝입니다.</span></div></li>
+        <li><div><b>누가 언제 무엇을 썼는지 기록됩니다</b><span>부서별 사용량과 비용을 바로 확인할 수 있습니다.</span></div></li>
+        <li><div><b>사용량을 조절하고 중복 요청은 재사용합니다</b><span>한도 초과를 막고, 같은 요청은 다시 돈을 내지 않습니다.</span></div></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card analogy">
+    <div class="q">“</div>
+    <div>
+      <p><b>법인카드를 복사해서 모든 직원에게 나눠주는 대신, 구매 담당자에게 요청하면 대신 결제해 주는 것과 같습니다.</b></p>
+      <small>직원은 필요한 것을 요청만 하면 되고, 카드(회사 키)는 담당자(게이트웨이)만 가지고 있으면서 모든 결제 내역을 남깁니다.</small>
+    </div>
+  </div>
+
+  <h2>직접 해보기: 요청은 이렇게 오갑니다</h2>
+  <p class="h2-sub">직원과 업무를 고르고 <b>요청 보내기</b>를 누르면, 요청이 게이트웨이를 거쳐 외부 서비스에 다녀오는 과정을 단계별로 보여줍니다. 실제 서버끼리 통신한 결과입니다.</p>
+
+  <div class="try">
+    <div class="card controls">
+      <div>
+        <label class="field-label" for="userSel">① 누가 요청하나요?</label>
+        <select id="userSel"></select>
+        <div class="who"><span id="userState"></span><button class="btn-s" id="btnRetire"></button></div>
+      </div>
+      <div>
+        <span class="field-label">② 어떤 업무인가요?</span>
+        <div class="tasks" id="tasks"></div>
+      </div>
+      <div class="inputs" id="inputs"></div>
+      <button class="send" id="btnSend">요청 보내기</button>
+    </div>
+
+    <div class="card stage">
+      <div class="flow">
+        <div class="track"></div>
+        <div class="node" id="nUser"><div class="ico"><svg><use href="#i-person"/></svg></div><b>직원 PC</b><small id="nUserSub">사원 키</small></div>
+        <div class="node gw" id="nGw"><div class="ico"><svg><use href="#i-server"/></svg></div><b>게이트웨이</b><small>회사 키 보관 (비공개)</small></div>
+        <div class="node" id="nExt"><div class="ico"><svg><use href="#i-cloud"/></svg></div><b>외부 서비스</b><small id="nExtSub"></small></div>
+        <div class="packet" id="packet"></div>
+      </div>
+      <ol class="steps" id="steps"></ol>
+    </div>
+  </div>
+
+  <div class="card result" id="result">
+    <div class="placeholder">요청을 보내면 결과가 여기에 표시됩니다.</div>
+  </div>
+
+  <h2>관리자는 모든 요청을 확인할 수 있습니다</h2>
+  <p class="h2-sub">게이트웨이를 거친 요청은 모두 누가, 언제, 무엇을, 얼마에 썼는지 기록됩니다.</p>
+  <div class="card log"><table id="logs"></table></div>
+
+  <div class="card next">
+    <p>여러 직원이 한꺼번에 요청하면 어떻게 될까요? 게이트웨이가 몰리는 요청을 어떻게 정리하는지 확인해 보세요.</p>
+    <a href="/dashboard">트래픽 시뮬레이션 보기 →</a>
+  </div>
+</div>
+
+<script>
+const ADMIN_KEY = "__ADMIN_KEY__";
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const won = (n) => `${(Math.round((n ?? 0) * 10) / 10).toLocaleString("ko-KR")}원`;
+const secs = (ms) => ms >= 1000 ? `${(ms / 1000).toFixed(1)}초` : `${(ms / 1000).toFixed(2)}초`;
+const maskKey = (k) => k ? `${k.slice(0, 7)}…${k.slice(-4)}` : "";
+const STEP_MS = 850;
+
+const TASKS = [
+  { id: "biz", title: "거래처 확인", hint: "정상 영업 중인지", service: "사업자 조회 서비스", method: "GET", path: "/v1/biz/status" },
+  { id: "fx", title: "오늘 환율", hint: "외화 금액 환산", service: "환율 서비스", method: "GET", path: "/v1/fx/rates" },
+  { id: "translate", title: "문장 번역", hint: "영어·일본어", service: "번역 서비스", method: "POST", path: "/v1/translate" },
+  { id: "ai", title: "보고서 요약", hint: "AI가 핵심만", service: "AI 요약 서비스", method: "POST", path: "/v1/ai/summarize" },
+  { id: "ocr", title: "영수증 인식", hint: "사진에서 금액 추출", service: "문서 인식 서비스", method: "POST", path: "/v1/ocr" },
+];
+const TASK = Object.fromEntries(TASKS.map((t) => [t.id, t]));
+const RECEIPTS = ["영수증_0915_점심.jpg", "영수증_0918_택시.jpg", "영수증_0922_사무용품.jpg", "영수증_0925_회의다과.jpg"];
+const CURRENCIES = [["USD", "미국 달러"], ["JPY", "일본 엔"], ["EUR", "유로"], ["CNY", "중국 위안"], ["GBP", "영국 파운드"]];
+
+const STEPS = [
+  "직원이 사원 키를 붙여 게이트웨이에 요청합니다",
+  "게이트웨이가 누가 보냈는지 확인합니다",
+  "게이트웨이가 회사 키로 외부 서비스에 대신 요청합니다",
+  "외부 서비스가 결과를 게이트웨이에 돌려줍니다",
+  "게이트웨이가 기록을 남기고 결과를 직원에게 전달합니다",
+];
+
+// 에러 코드 → (어디서 멈췄는지, 쉬운 설명)
+const ERRORS = {
+  INVALID_KEY: ["gw", "등록되지 않은 키라서 게이트웨이가 요청을 막았습니다."],
+  KEY_REVOKED: ["gw", "퇴사 처리된 직원의 키라서 게이트웨이가 요청을 막았습니다. 외부 서비스에는 아무것도 전달되지 않았습니다."],
+  USER_RATE_LIMIT: ["gw", "짧은 시간에 요청이 너무 많아 잠시 쉬었다 보내도록 막았습니다."],
+  USER_CONCURRENCY_LIMIT: ["gw", "동시에 보낸 요청이 너무 많아 잠시 막았습니다."],
+  BUDGET_EXCEEDED: ["gw", "오늘 쓸 수 있는 예산을 모두 사용했습니다."],
+  QUEUE_FULL: ["gw", "요청이 몰려 있어 잠시 후 다시 시도해 달라고 안내했습니다."],
+  QUEUE_TIMEOUT: ["gw", "요청이 몰려 있어 잠시 후 다시 시도해 달라고 안내했습니다."],
+  CIRCUIT_OPEN: ["gw", "외부 서비스에 장애가 있어 잠시 요청을 멈춘 상태입니다."],
+  PLATFORM_QUOTA_EXHAUSTED: ["gw", "외부 서비스의 오늘 사용 한도를 모두 사용했습니다."],
+  PLATFORM_ERROR: ["ext", "외부 서비스에서 오류가 났습니다. 게이트웨이가 자동으로 다시 시도했지만 실패했습니다."],
+  PLATFORM_TIMEOUT: ["ext", "외부 서비스가 제시간에 응답하지 않았습니다."],
+  PLATFORM_UNREACHABLE: ["ext", "외부 서비스에 연결할 수 없습니다."],
+  PLATFORM_RATE_LIMITED: ["ext", "외부 서비스가 요청이 많다며 거절했습니다."],
+  PLATFORM_BAD_REQUEST: ["ext", "외부 서비스가 입력값이 잘못되었다고 알려왔습니다."],
+  VALIDATION: ["gw", "입력값이 올바르지 않아 게이트웨이가 요청을 돌려보냈습니다."],
+};
+
+let users = [], samples = { short_texts: [], reports: [] }, current = "biz", busy = false;
+
+async function admin(path, method = "GET") {
+  const res = await fetch(path, { method, headers: { "X-Admin-Key": ADMIN_KEY } });
+  if (!res.ok) throw new Error(`요청 실패 (${res.status})`);
+  return res.json();
+}
+
+// ── 선택 UI ─────────────────────────────────────
+function selectedUser() { return users.find((u) => u.id === $("userSel").value); }
+
+function renderUser() {
+  const u = selectedUser();
+  if (!u) return;
+  $("userState").innerHTML = u.active
+    ? `<span class="pill ok">사원 키 사용 중</span>`
+    : `<span class="pill bad">퇴사 처리됨 (키 폐기)</span>`;
+  $("btnRetire").textContent = u.active ? "퇴사 처리해 보기" : "다시 입사 처리";
+  $("btnRetire").className = "btn-s" + (u.active ? "" : " restore");
+  $("nUserSub").textContent = `사원 키 ${maskKey(u.api_key)}`;
+}
+
+function renderTasks() {
+  $("tasks").innerHTML = TASKS.map((t) =>
+    `<button class="task ${t.id === current ? "on" : ""}" data-id="${t.id}"><b>${t.title}</b><span>${t.hint}</span></button>`).join("");
+  document.querySelectorAll(".task").forEach((b) => b.onclick = () => { current = b.dataset.id; renderTasks(); renderInputs(); });
+  $("nExtSub").textContent = TASK[current].service + " (가상)";
+}
+
+function options(list, selected) {
+  return list.map(([v, label]) => `<option value="${esc(v)}" ${v === selected ? "selected" : ""}>${esc(label)}</option>`).join("");
+}
+
+function renderInputs() {
+  const f = {
+    biz: `<div><label class="field-label" for="bno">사업자번호 (10자리 숫자)</label>
+            <input type="text" id="bno" value="1248100998" maxlength="10" inputmode="numeric"></div>`,
+    fx: `<div><label class="field-label" for="cur">통화</label><select id="cur">${options(CURRENCIES, "USD")}</select></div>`,
+    translate: `<div><label class="field-label" for="txt">번역할 문장</label>
+                  <select id="txt">${options(samples.short_texts.map((t) => [t, t]))}</select></div>
+                <div><label class="field-label" for="lang">어느 언어로?</label>
+                  <select id="lang">${options([["EN", "영어"], ["JA", "일본어"]], "EN")}</select></div>`,
+    ai: `<div><label class="field-label" for="rep">요약할 보고서</label>
+           <select id="rep">${options(samples.reports.map((r, i) => [String(i), r.split("\n")[0]]))}</select></div>`,
+    ocr: `<div><label class="field-label" for="file">영수증 사진</label><select id="file">${options(RECEIPTS.map((r) => [r, r]))}</select></div>`,
+  };
+  $("inputs").innerHTML = f[current];
+}
+
+function buildRequest() {
+  const t = TASK[current];
+  if (current === "biz") return { ...t, query: { b_no: $("bno").value.trim() } };
+  if (current === "fx") return { ...t, query: { currency: $("cur").value } };
+  if (current === "translate") return { ...t, body: { text: $("txt").value, target_lang: $("lang").value } };
+  if (current === "ai") return { ...t, body: { text: samples.reports[Number($("rep").value)] } };
+  return { ...t, body: { filename: $("file").value } };
+}
+
+// ── 흐름 애니메이션 ──────────────────────────────
+const POS = { user: "16.66%", gw: "50%", ext: "83.33%" };
+
+function resetFlow() {
+  $("steps").innerHTML = STEPS.map((s, i) =>
+    `<li class="step" id="s${i}"><span class="n">${i + 1}</span><div><div class="t">${s}</div><div class="d" id="d${i}"></div></div></li>`).join("");
+  ["nUser", "nGw", "nExt"].forEach((id) => $(id).classList.remove("active", "fail"));
+  const p = $("packet");
+  p.style.transition = "none"; p.style.left = POS.user; p.className = "packet";
+  void p.offsetWidth; p.style.transition = "";
+}
+
+function setStep(i, state, detail) {
+  const el = $(`s${i}`);
+  el.className = `step ${state}`;
+  if (detail !== undefined) $(`d${i}`).innerHTML = detail;
+}
+
+function focusNode(id, fail = false) {
+  ["nUser", "nGw", "nExt"].forEach((n) => $(n).classList.remove("active"));
+  if (id) $(id).classList.add(fail ? "fail" : "active");
+}
+
+async function move(to, label, kind = "") {
+  const p = $("packet");
+  p.textContent = label;
+  p.className = `packet show ${kind}`;
+  p.style.left = POS[to];
+  await sleep(STEP_MS);
+}
+
+async function callGateway(req, user) {
+  const url = req.path + (req.query ? "?" + new URLSearchParams(req.query) : "");
+  const res = await fetch(url, {
+    method: req.method,
+    headers: { "X-API-Key": user.api_key, "X-Trace": "1", ...(req.body ? { "Content-Type": "application/json" } : {}) },
+    body: req.body ? JSON.stringify(req.body) : undefined,
+  });
+  const body = await res.json().catch(() => ({}));
+  return { status: res.status, body, url };
+}
+
+async function send() {
+  if (busy) return;
+  const user = selectedUser();
+  const req = buildRequest();
+  busy = true; $("btnSend").disabled = true;
+  resetFlow();
+  $("result").innerHTML = `<div class="placeholder">요청을 처리하는 중입니다…</div>`;
+  const call = callGateway(req, user);  // 실제 요청은 바로 보내고, 화면은 단계별로 천천히 보여준다
+
+  // ① 직원 → 게이트웨이
+  setStep(0, "active", `${esc(user.name)} 님의 PC가 <b>사원 키(${maskKey(user.api_key)})</b>를 붙여 '${req.title}' 업무를 요청합니다.`);
+  focusNode("nUser");
+  await sleep(300);
+  await move("gw", "요청 + 사원 키");
+  setStep(0, "done");
+
+  // ② 게이트웨이: 누가 보냈는지 확인
+  setStep(1, "active", "사원 키를 확인하는 중…");
+  focusNode("nGw");
+  const { status, body, url } = await call;
+  await sleep(STEP_MS);
+  const code = body?.error?.code || (status === 422 ? "VALIDATION" : null);
+  const [stage, friendly] = code ? (ERRORS[code] || ["gw", body?.error?.message || "요청을 처리하지 못했습니다."]) : [null, null];
+
+  if (code && stage === "gw" && ["INVALID_KEY", "KEY_REVOKED", "VALIDATION"].includes(code)) {
+    setStep(1, "fail", friendly);
+    focusNode("nGw", true);
+    await move("user", "요청 거절", "error");
+    STEPS.slice(2).forEach((_, i) => setStep(i + 2, "skip", "진행하지 않음"));
+    showError(code, friendly, { status, body, url, req, user });
+    return finish();
+  }
+  setStep(1, "done", `<b>${esc(user.dept)} ${esc(user.name)}</b> 님으로 확인했습니다. 사용 권한과 오늘 사용량도 확인했습니다.`);
+
+  if (code && stage === "gw") {  // 한도·예산·장애 차단 등: 외부 서비스로 보내지 않음
+    setStep(2, "fail", friendly);
+    focusNode("nGw", true);
+    await move("user", "안내 메시지", "error");
+    setStep(3, "skip", "진행하지 않음");
+    setStep(4, "skip", "진행하지 않음");
+    showError(code, friendly, { status, body, url, req, user });
+    return finish();
+  }
+
+  const meta = body.meta || {};
+  const reused = meta.source === "cache" || meta.source === "coalesced";
+
+  if (reused) {
+    // ③④ 저장된 결과 재사용
+    setStep(2, "done", `조금 전 같은 요청의 결과가 있어서 <b>외부 서비스에 다시 묻지 않고</b> 저장된 결과를 씁니다. 추가 비용이 들지 않습니다.`);
+    await sleep(STEP_MS);
+    setStep(3, "skip", "생략 (외부 서비스 호출 없음)");
+  } else {
+    // ③ 게이트웨이 → 외부 서비스
+    setStep(2, "active", `직원의 사원 키는 떼어내고, 게이트웨이만 가진 <b>회사 키</b>를 붙여 ${req.service}에 요청합니다.`);
+    await move("ext", "요청 + 회사 키", "company");
+    setStep(2, "done");
+    focusNode("nExt", code && stage === "ext");
+
+    // ④ 외부 서비스 → 게이트웨이
+    if (code) {
+      setStep(3, "fail", friendly);
+      await move("gw", "오류", "error");
+      focusNode("nGw");
+      setStep(4, "active");
+      await move("user", "안내 메시지", "error");
+      setStep(4, "done", "실패한 내용도 기록하고 직원에게 이유를 알려줍니다.");
+      showError(code, friendly, { status, body, url, req, user });
+      return finish();
+    }
+    const attempts = meta.upstream?.attempts || [];
+    const last = attempts[attempts.length - 1];
+    const retryNote = attempts.length > 1
+      ? ` 처음 ${attempts.length - 1}번은 외부 서비스 오류로 실패해서, 게이트웨이가 <b>자동으로 다시 시도</b>했습니다.` : "";
+    setStep(3, "active", `${req.service}가 결과를 보냈습니다. (${last ? secs(last.ms) : "-"} 걸림)${retryNote}`);
+    await sleep(350);
+    await move("gw", "결과", "result");
+    setStep(3, "done");
+  }
+
+  // ⑤ 게이트웨이 → 직원
+  focusNode("nGw");
+  setStep(4, "active", `사용 기록: ${esc(user.name)} · ${req.title} · ${won(meta.cost_krw)}`);
+  await move("user", "결과", "result");
+  focusNode("nUser");
+  setStep(4, "done");
+  showResult(req, body, { status, url, user });
+  finish();
+}
+
+function finish() {
+  busy = false; $("btnSend").disabled = false;
+  loadLogs();
+}
+
+// ── 결과 표시 ───────────────────────────────────
+function friendlyData(req, d) {
+  const id = req.id;
+  if (id === "biz") {
+    const cls = d.b_stt === "계속사업자" ? "ok" : d.b_stt === "휴업자" ? "warn" : "bad";
+    const note = d.b_stt === "계속사업자" ? "정상 영업 중" : d.b_stt === "휴업자" ? "휴업 중" : "폐업";
+    return `<div class="res-title">${esc(d.company_name)}</div>
+      <div class="kv"><span>영업 상태</span><div><span class="pill ${cls}">${esc(d.b_stt)} · ${note}</span></div>
+      <span>사업자번호</span><div>${esc(d.b_no.replace(/(\d{3})(\d{2})(\d{5})/, "$1-$2-$3"))}</div>
+      <span>대표자</span><div>${esc(d.representative)}</div>
+      <span>과세 유형</span><div>${esc(d.tax_type)}</div>
+      <span>개업일</span><div>${esc(d.opened_at)}</div>
+      ${d.end_dt ? `<span>폐업일</span><div>${esc(d.end_dt.replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3"))}</div>` : ""}</div>`;
+  }
+  if (id === "fx") {
+    return `<div class="big-num">${d.unit} ${esc(d.currency)} = ${d.deal_base_rate.toLocaleString("ko-KR", { minimumFractionDigits: 2 })}원</div>
+      <div class="kv" style="margin-top:8px"><span>통화</span><div>${esc(d.currency_name)}</div>
+      <span>송금 보낼 때</span><div>${d.tts.toLocaleString("ko-KR")}원</div>
+      <span>송금 받을 때</span><div>${d.ttb.toLocaleString("ko-KR")}원</div>
+      <span>기준일</span><div>${esc(d.date)}</div></div>`;
+  }
+  if (id === "translate") {
+    return `<div class="quote"><small>원문 (한국어)</small>${esc(req.body.text)}</div>
+      <div class="quote"><small>번역 (${d.target_lang === "JA" ? "일본어" : d.target_lang === "EN" ? "영어" : esc(d.target_lang)})</small><b>${esc(d.translated_text)}</b></div>`;
+  }
+  if (id === "ai") {
+    return `<div class="res-title" style="font-size:18px">${esc(d.title)}</div>
+      <div class="quote"><small>AI 요약</small>${esc(d.summary)}</div>
+      ${d.key_points.length ? `<div class="quote"><small>핵심 수치</small><ul style="margin:0;padding-left:18px">${d.key_points.map((p) => `<li>${esc(p)}</li>`).join("")}</ul></div>` : ""}`;
+  }
+  return `<div class="res-title">${esc(d.store_name)}</div>
+    <table><thead><tr><th>품목</th><th class="num">수량</th><th class="num">금액</th></tr></thead><tbody>
+    ${d.items.map((i) => `<tr><td>${esc(i.name)}</td><td class="num">${i.qty}</td><td class="num">${i.amount.toLocaleString("ko-KR")}원</td></tr>`).join("")}
+    <tr><td><b>합계</b></td><td></td><td class="num"><b>${d.total.toLocaleString("ko-KR")}원</b></td></tr></tbody></table>
+    <div class="kv" style="margin-top:10px"><span>결제일</span><div>${esc(d.date)}</div>
+    <span>부가세</span><div>${d.vat.toLocaleString("ko-KR")}원</div>
+    <span>인식 정확도</span><div>${Math.round(d.confidence * 100)}%</div></div>`;
+}
+
+function devPanels({ req, user, url, body }) {
+  const requestLine = `${req.method} ${url}\nX-API-Key: ${maskKey(user.api_key)}   ← 직원의 사원 키` +
+    (req.body ? `\n\n${JSON.stringify(req.body, null, 2)}` : "");
+  const up = body?.meta?.upstream;
+  const upstream = up
+    ? `${up.method} ${up.url}${up.method === "GET" ? "?" + new URLSearchParams(up.params) : ""}\nAuthorization: ${up.authorization}   ← 회사 키 (가려서 표시)` +
+      (up.method !== "GET" ? `\n\n${JSON.stringify(up.params, null, 2)}` : "")
+    : body?.meta?.source ? "저장된 결과를 재사용해서 외부 서비스에 보내지 않았습니다." : "외부 서비스로 보내지 않았습니다.";
+  const external = body?.data ? JSON.stringify(body.data, null, 2) : "-";
+  const toUser = JSON.parse(JSON.stringify(body || {}));
+  if (toUser.meta) { delete toUser.meta.upstream; delete toUser.meta.caller; }
+  return `<details class="dev"><summary>개발자용: 실제로 오간 요청과 응답 보기</summary>
+    <div class="devgrid">
+      <div class="devbox"><h4>① 직원 → 게이트웨이</h4><pre>${esc(requestLine)}</pre></div>
+      <div class="devbox"><h4>③ 게이트웨이 → 외부 서비스</h4><pre>${esc(upstream)}</pre></div>
+      <div class="devbox"><h4>④ 외부 서비스 → 게이트웨이</h4><pre>${esc(up ? external : "-")}</pre></div>
+      <div class="devbox"><h4>⑤ 게이트웨이 → 직원</h4><pre>${esc(JSON.stringify(toUser, null, 2))}</pre></div>
+    </div></details>`;
+}
+
+function showResult(req, body, ctx) {
+  const m = body.meta || {};
+  const reused = m.source === "cache" || m.source === "coalesced";
+  $("result").innerHTML = `
+    <div class="result-head"><h3>${esc(ctx.user.name)} 님이 받은 결과 · ${req.title}</h3>
+      <div class="facts">
+        <span class="fact">총 ${secs(m.latency_ms || 0)}</span>
+        <span class="fact ${reused ? "good" : ""}">${reused ? "저장된 결과 재사용" : "외부 서비스에서 받아옴"}</span>
+        <span class="fact ${m.cost_krw ? "" : "good"}">비용 ${won(m.cost_krw)}</span>
+        ${m.retries ? `<span class="fact">자동 재시도 ${m.retries}회</span>` : ""}
+      </div></div>
+    ${friendlyData(req, body.data)}
+    ${devPanels({ req, user: ctx.user, url: ctx.url, body })}`;
+}
+
+function showError(code, friendly, ctx) {
+  $("result").innerHTML = `
+    <div class="result-head"><h3>${esc(ctx.user.name)} 님이 받은 안내 · ${ctx.req.title}</h3>
+      <div class="facts"><span class="fact">HTTP ${ctx.status}</span><span class="fact">${esc(code)}</span></div></div>
+    <p class="errmsg">${esc(friendly)}</p>
+    ${devPanels(ctx)}`;
+}
+
+// ── 관리자 기록 ─────────────────────────────────
+async function loadLogs() {
+  try {
+    const d = await admin("/admin/dashboard");
+    const logs = d.logs.slice(0, 8);
+    if (!logs.length) {
+      $("logs").innerHTML = `<tbody><tr><td class="placeholder">아직 기록이 없습니다. 위에서 요청을 보내 보세요.</td></tr></tbody>`;
+      return;
+    }
+    $("logs").innerHTML = `<thead><tr><th>시간</th><th>직원</th><th>부서</th><th>업무</th><th>결과</th><th>처리 방식</th><th class="num">비용</th></tr></thead><tbody>` +
+      logs.map((l) => {
+        const ok = l.status < 300;
+        const how = !ok ? "-" : l.source === "origin" ? "외부 서비스 호출" : "저장된 결과 재사용";
+        const result = ok ? `<span class="pill ok">성공</span>`
+          : `<span class="pill bad">${l.error_code === "KEY_REVOKED" ? "퇴사자 키 차단" : "실패"}</span>`;
+        return `<tr><td>${l.time}</td><td><b>${esc(l.user_name)}</b></td><td>${esc(l.dept)}</td>
+          <td>${esc(TASK[l.platform]?.title || "-")}</td><td>${result}</td><td>${how}</td><td class="num">${won(l.cost_krw)}</td></tr>`;
+      }).join("") + "</tbody>";
+  } catch (e) { /* 연결이 잠시 끊겨도 화면은 유지 */ }
+}
+
+// ── 시작 ───────────────────────────────────────
+$("btnSend").onclick = send;
+$("userSel").onchange = renderUser;
+$("btnRetire").onclick = async () => {
+  const u = selectedUser();
+  try {
+    await admin(u.active ? `/admin/keys/${u.id}` : `/admin/keys/${u.id}/activate`, u.active ? "DELETE" : "POST");
+    u.active = !u.active;
+    renderUser();
+  } catch (e) { alert(e.message); }
+};
+
+(async () => {
+  try {
+    [users, samples] = await Promise.all([admin("/admin/users"), admin("/admin/samples")]);
+  } catch (e) {
+    $("result").innerHTML = `<p class="errmsg">게이트웨이 서버에 연결할 수 없습니다. python run.py 로 서버를 먼저 실행해 주세요.</p>`;
+    return;
+  }
+  $("userSel").innerHTML = users.map((u) => `<option value="${u.id}">${esc(u.name)} · ${esc(u.dept)}</option>`).join("");
+  renderUser();
+  renderTasks();
+  renderInputs();
+  resetFlow();
+  loadLogs();
+  setInterval(loadLogs, 4000);
+})();
+</script>
+</body>
+</html>

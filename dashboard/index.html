@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>API Hub 대시보드</title>
+<style>
+  :root {
+    --bg: #f4f5f7; --panel: #ffffff; --panel-2: #f8f9fb; --text: #15171c; --muted: #5d6471; --line: #e2e5ea;
+    --accent: #2c6bed; --accent-soft: #e7eefe;
+    --ok: #1c9a52; --ok-soft: #e2f4e9; --bad: #d23f3f; --bad-soft: #fce7e7; --warn: #b8740a; --warn-soft: #fcf0d9;
+    --direct: #d23f3f; --gateway: #2c6bed;
+    --shadow: 0 1px 2px rgba(16, 24, 40, .05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0e1014; --panel: #161920; --panel-2: #1b1f27; --text: #e7e9ee; --muted: #9aa1ad; --line: #272c36;
+      --accent: #6f9cff; --accent-soft: #1b2640;
+      --ok: #41cc7d; --ok-soft: #13291d; --bad: #ff6f6f; --bad-soft: #331a1c; --warn: #f0b14a; --warn-soft: #33270f;
+      --direct: #ff6f6f; --gateway: #6f9cff; --shadow: none;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 14px/1.5 "Pretendard", "Malgun Gothic", "Apple SD Gothic Neo", system-ui, sans-serif; }
+  .wrap { max-width: 1320px; margin: 0 auto; padding: 20px 16px 48px; }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
+  .brand h1 { margin: 0; font-size: 20px; letter-spacing: -.01em; }
+  .brand p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+  .head-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .conn { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+  .dot.on { background: var(--ok); } .dot.off { background: var(--bad); }
+  .btn { border: 1px solid var(--line); background: var(--panel); color: var(--text); border-radius: 8px;
+         padding: 7px 12px; font: inherit; font-size: 13px; cursor: pointer; text-decoration: none; }
+  .btn:hover { border-color: var(--accent); }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); }
+  .section-title { font-size: 13px; font-weight: 600; color: var(--muted); margin: 26px 0 10px; }
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .kpi { padding: 12px 14px; }
+  .kpi .label { font-size: 12px; color: var(--muted); }
+  .kpi .value { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  .scenarios { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 10px; }
+  .sc { text-align: left; padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel);
+        color: var(--text); font: inherit; cursor: pointer; display: flex; flex-direction: column; gap: 6px; min-height: 108px; }
+  .sc:hover:not(:disabled) { border-color: var(--accent); }
+  .sc:disabled { opacity: .5; cursor: not-allowed; }
+  .sc.active { border-color: var(--accent); background: var(--accent-soft); opacity: 1; }
+  .sc .no { font-size: 11px; color: var(--accent); font-weight: 700; }
+  .sc .t { font-weight: 700; font-size: 14px; }
+  .sc .tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: auto; }
+  .tag { font-size: 11px; padding: 1px 6px; border-radius: 999px; background: var(--panel-2); color: var(--muted); border: 1px solid var(--line); }
+
+  .run { padding: 16px 18px; margin-top: 12px; }
+  .run-head { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: baseline; }
+  .run-head h2 { margin: 0; font-size: 17px; }
+  .run-head .meta { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+  .run p { margin: 6px 0 0; color: var(--muted); }
+  .run ul { margin: 8px 0 0; padding-left: 18px; }
+  .progress { height: 4px; background: var(--panel-2); border-radius: 99px; overflow: hidden; margin-top: 12px; }
+  .progress > div { height: 100%; background: var(--accent); transition: width .4s; }
+  .focus { margin-top: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .focus > div { padding: 10px 12px; border-radius: 10px; background: var(--panel-2); border: 1px solid var(--line); font-size: 13px; }
+  .focus b { font-variant-numeric: tabular-nums; }
+  .errbox { margin-top: 10px; color: var(--bad); font-size: 13px; }
+
+  .lanes { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+  .lane { padding: 16px 18px; border-top: 3px solid var(--lane); }
+  .lane.direct { --lane: var(--direct); } .lane.gateway { --lane: var(--gateway); }
+  .lane-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .lane-head h3 { margin: 0; font-size: 15px; }
+  .lane-head span { font-size: 12px; color: var(--muted); }
+  .big { display: flex; align-items: baseline; gap: 10px; margin: 10px 0 12px; }
+  .big .rate { font-size: 40px; font-weight: 800; letter-spacing: -.02em; font-variant-numeric: tabular-nums; color: var(--lane); }
+  .big .sub { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .m { background: var(--panel-2); border-radius: 8px; padding: 8px 10px; }
+  .m .label { font-size: 11px; color: var(--muted); }
+  .m .value { font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; min-height: 24px; }
+  .chip { font-size: 12px; padding: 2px 8px; border-radius: 999px; background: var(--bad-soft); color: var(--bad); }
+  .chip.none { background: var(--ok-soft); color: var(--ok); }
+  .timeline { margin-top: 12px; }
+  .timeline svg { width: 100%; height: 120px; display: block; }
+  .timeline .cap { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  .grid2 { display: grid; grid-template-columns: 1.1fr 1fr; gap: 12px; }
+  .table-card { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th { font-size: 12px; color: var(--muted); font-weight: 600; background: var(--panel-2); position: sticky; top: 0; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tr:last-child td { border-bottom: none; }
+  .pill { display: inline-block; font-size: 12px; padding: 1px 8px; border-radius: 999px; }
+  .pill.ok { background: var(--ok-soft); color: var(--ok); }
+  .pill.bad { background: var(--bad-soft); color: var(--bad); }
+  .pill.warn { background: var(--warn-soft); color: var(--warn); }
+  .pill.info { background: var(--accent-soft); color: var(--accent); }
+  .muted { color: var(--muted); }
+  .bar { width: 80px; height: 6px; background: var(--panel-2); border-radius: 99px; overflow: hidden; display: inline-block; vertical-align: middle; }
+  .bar > div { height: 100%; background: var(--accent); }
+  .log { max-height: 440px; overflow-y: auto; }
+  .empty { padding: 28px; text-align: center; color: var(--muted); }
+  footer { margin-top: 28px; color: var(--muted); font-size: 12px; }
+  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg);
+           padding: 10px 16px; border-radius: 8px; font-size: 13px; opacity: 0; transition: opacity .2s; pointer-events: none; }
+  .toast.show { opacity: 1; }
+
+  @media (max-width: 900px) {
+    .lanes, .grid2, .focus { grid-template-columns: 1fr; }
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <h1>API Hub · 통합 API 게이트웨이</h1>
+      <p>직원은 내부 키 하나로, 외부 플랫폼 키는 게이트웨이만 보관합니다.</p>
+    </div>
+    <div class="head-right">
+      <span class="conn"><span class="dot" id="dotGw"></span>게이트웨이</span>
+      <span class="conn"><span class="dot" id="dotMock"></span>가상 플랫폼</span>
+      <a class="btn" href="/intro">← 소개</a>
+      <a class="btn" href="/docs" target="_blank">API 문서</a>
+      <button class="btn" id="btnReset">초기화</button>
+    </div>
+  </header>
+
+  <div class="kpis">
+    <div class="card kpi"><div class="label">오늘 게이트웨이 요청</div><div class="value" id="kCalls">0</div></div>
+    <div class="card kpi"><div class="label">성공률</div><div class="value" id="kRate">-</div></div>
+    <div class="card kpi"><div class="label">캐시·병합으로 아낀 호출</div><div class="value" id="kCached">0</div></div>
+    <div class="card kpi"><div class="label">오늘 과금액</div><div class="value" id="kCost">0원</div></div>
+  </div>
+
+  <div class="section-title">시연 시나리오: 누르면 같은 요청을 '직접 호출'과 '게이트웨이 경유'로 동시에 보냅니다</div>
+  <div class="scenarios" id="scenarios"></div>
+
+  <div class="card run" id="run"><div class="empty">위에서 시나리오를 선택하세요.</div></div>
+
+  <div class="lanes">
+    <div class="card lane direct" id="laneDirect"></div>
+    <div class="card lane gateway" id="laneGateway"></div>
+  </div>
+
+  <div class="section-title">플랫폼 상태 (게이트웨이 쪽)</div>
+  <div class="card table-card"><table id="platforms"></table></div>
+
+  <div class="grid2">
+    <div>
+      <div class="section-title">직원별 사용량 (오늘, 호출 많은 순)</div>
+      <div class="card table-card"><table id="users"></table></div>
+    </div>
+    <div>
+      <div class="section-title">실시간 요청 로그 (게이트웨이)</div>
+      <div class="card table-card log"><table id="logs"></table></div>
+    </div>
+  </div>
+
+  <footer>시연용 프로토타입입니다. 외부 플랫폼은 가상 서버이며, 단가는 시연을 위해 설정한 값입니다.</footer>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const ADMIN_KEY = "__ADMIN_KEY__";
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const num = (n) => (n ?? 0).toLocaleString("ko-KR");
+const won = (n) => `${(Math.round((n ?? 0) * 10) / 10).toLocaleString("ko-KR")}원`;
+const dur = (v) => v == null ? "-" : v >= 1000 ? `${(v / 1000).toFixed(1)}초` : `${Math.round(v)}ms`;
+
+const ERR = {
+  "0": "연결 실패", "401": "401 인증 실패", "429": "429 한도 초과", "500": "500 플랫폼 오류", "404": "404",
+  INVALID_KEY: "잘못된 키", KEY_REVOKED: "폐기된 키 차단",
+  USER_RATE_LIMIT: "개인 분당 한도", USER_CONCURRENCY_LIMIT: "개인 동시 요청 한도", BUDGET_EXCEEDED: "개인 예산 초과",
+  QUEUE_FULL: "대기열 가득 참", QUEUE_TIMEOUT: "대기 시간 초과",
+  PLATFORM_QUOTA_EXHAUSTED: "플랫폼 한도 소진", PLATFORM_RATE_LIMITED: "플랫폼 거절",
+  PLATFORM_ERROR: "플랫폼 오류(재시도 후)", PLATFORM_TIMEOUT: "응답 시간 초과", PLATFORM_UNREACHABLE: "플랫폼 연결 실패",
+  PLATFORM_BAD_REQUEST: "잘못된 요청", CIRCUIT_OPEN: "서킷 차단(빠른 실패)",
+};
+const SOURCE = { cache: "캐시", coalesced: "병합", origin: "플랫폼" };
+let platformNames = {};
+let scenarios = [];
+let lastScenario = null;
+
+async function api(path, method = "GET", body) {
+  const res = await fetch(path, {
+    method, headers: { "X-Admin-Key": ADMIN_KEY, "Content-Type": "application/json" },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data?.error?.message || `요청 실패 (${res.status})`);
+  return data;
+}
+
+function toast(msg) {
+  const el = $("toast");
+  el.textContent = msg; el.classList.add("show");
+  clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove("show"), 2600);
+}
+
+async function runScenario(id) {
+  try { await api("/admin/simulate", "POST", { scenario: id }); tick(); }
+  catch (e) { toast(e.message); }
+}
+
+$("btnReset").onclick = async () => {
+  if (!confirm("사용량, 캐시, 한도 상태, 시나리오 결과를 모두 초기화할까요?")) return;
+  try { await api("/admin/reset", "POST"); toast("초기화했습니다."); tick(); }
+  catch (e) { toast(e.message); }
+};
+
+function renderScenarios(running, activeId) {
+  $("scenarios").innerHTML = scenarios.map((s, i) => `
+    <button class="sc ${s.id === activeId ? "active" : ""}" data-id="${s.id}" ${running ? "disabled" : ""} title="${esc(s.summary)}">
+      <span class="no">시나리오 ${i + 1}</span>
+      <span class="t">${esc(s.title)}</span>
+      <span class="tags">${s.tags.map((t) => `<span class="tag">${esc(t)}</span>`).join("")}</span>
+    </button>`).join("");
+  document.querySelectorAll(".sc").forEach((b) => b.onclick = () => runScenario(b.dataset.id));
+}
+
+function renderRun(sc) {
+  if (!sc || sc.status === "idle") {
+    $("run").innerHTML = `<div class="empty">위에서 시나리오를 선택하세요.</div>`;
+    return;
+  }
+  const done = sc.lanes.direct.done + sc.lanes.gateway.done;
+  const pct = sc.total ? Math.min(100, done / (sc.total * 2) * 100) : 0;
+  const statusText = sc.status === "running"
+    ? `실행 중 · ${num(done)} / ${num(sc.total * 2)}건 · ${sc.elapsed}초`
+    : `완료 · ${num(sc.total)}건씩 · ${sc.elapsed}초`;
+  let focus = "";
+  if (sc.focus) {
+    const f = sc.focus;
+    const line = (lane, name) => {
+      const u = f[lane].user, o = f[lane].others;
+      return `<div><b>${name}</b><br>${esc(f.label)} ${esc(f.name)}: 성공 <b>${u.success}</b> / ${u.total}건<br>
+              다른 직원: 성공 <b>${o.success}</b> / ${o.total}건</div>`;
+    };
+    focus = `<div class="focus">${line("direct", "직접 호출")}${line("gateway", "게이트웨이")}</div>`;
+  }
+  $("run").innerHTML = `
+    <div class="run-head"><h2>${esc(sc.title)}</h2><span class="meta">${statusText}</span></div>
+    <p>${esc(sc.summary)}</p>
+    <ul>${sc.look_for.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
+    ${focus}
+    ${sc.error ? `<div class="errbox">오류: ${esc(sc.error)}</div>` : ""}
+    <div class="progress"><div style="width:${pct}%"></div></div>`;
+}
+
+function timelineSvg(tl, lane, maxY) {
+  const n = Math.max(tl.length, 10), W = 600, H = 110, gap = 2, bw = W / n - gap;
+  let bars = "";
+  tl.forEach((b, i) => {
+    const ok = b[`${lane}_ok`], fail = b[`${lane}_fail`];
+    const hOk = ok / maxY * H, hFail = fail / maxY * H, x = i * (W / n);
+    if (ok) bars += `<rect x="${x}" y="${H - hOk}" width="${bw}" height="${hOk}" rx="1.5" fill="var(--ok)"><title>${b.t}초: 성공 ${ok}건</title></rect>`;
+    if (fail) bars += `<rect x="${x}" y="${H - hOk - hFail}" width="${bw}" height="${hFail}" rx="1.5" fill="var(--bad)"><title>${b.t}초: 실패 ${fail}건</title></rect>`;
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+      <line x1="0" y1="${H - .5}" x2="${W}" y2="${H - .5}" stroke="var(--line)"/>${bars}</svg>
+    <div class="cap"><span>0초</span><span>초당 완료된 요청 (성공 <span style="color:var(--ok)">■</span> 실패 <span style="color:var(--bad)">■</span>) · 최대 ${maxY}건</span><span>${n}초</span></div>`;
+}
+
+function renderLane(el, lane, sc, maxY) {
+  const title = lane === "direct" ? "게이트웨이 없음" : "게이트웨이 경유";
+  const sub = lane === "direct" ? "직원들이 공유 키로 플랫폼을 직접 호출" : "직원별 내부 키 → 게이트웨이 → 플랫폼";
+  if (!sc || sc.status === "idle") {
+    el.innerHTML = `<div class="lane-head"><h3>${title}</h3><span>${sub}</span></div><div class="empty">결과가 여기에 표시됩니다.</div>`;
+    return;
+  }
+  const L = sc.lanes[lane], P = L.platform;
+  const errors = Object.entries(L.errors);
+  el.innerHTML = `
+    <div class="lane-head"><h3>${title}</h3><span>${sub}</span></div>
+    <div class="big"><span class="rate">${L.success_rate == null ? "-" : L.success_rate + "%"}</span>
+      <span class="sub">성공 ${num(L.success)} · 실패 ${num(L.failed)}</span></div>
+    <div class="metrics">
+      <div class="m"><div class="label">플랫폼이 받은 호출</div><div class="value">${P ? num(P.calls) : "-"}</div></div>
+      <div class="m"><div class="label">플랫폼 거절(429)</div><div class="value">${P ? num(P.rejected) : "-"}</div></div>
+      <div class="m"><div class="label">플랫폼 청구액</div><div class="value">${P ? won(P.billed) : "-"}</div></div>
+      <div class="m"><div class="label">평균 응답</div><div class="value">${dur(L.avg_ms)}</div></div>
+      <div class="m"><div class="label">캐시·병합 응답</div><div class="value">${num(L.cached)}건</div></div>
+      <div class="m"><div class="label">캐시로 아낀 비용</div><div class="value">${won(L.saved_krw)}</div></div>
+    </div>
+    <div class="chips">${errors.length
+      ? errors.map(([k, v]) => `<span class="chip">${esc(ERR[k] || k)} ${num(v)}</span>`).join("")
+      : (L.done ? `<span class="chip none">실패 없음</span>` : "")}</div>
+    <div class="timeline">${timelineSvg(sc.timeline, lane, maxY)}</div>`;
+}
+
+function circuitPill(c) {
+  if (c.state === "open") return `<span class="pill bad">차단 · ${c.remaining_sec}초</span>`;
+  if (c.state === "half_open") return `<span class="pill warn">복구 확인 중</span>`;
+  return `<span class="pill ok">정상</span>`;
+}
+
+function renderPlatforms(list) {
+  $("platforms").innerHTML = `<thead><tr>
+      <th>플랫폼</th><th>플랫폼 한도</th><th>게이트웨이 한도</th><th>단가</th><th class="num">플랫폼 오류율</th>
+      <th class="num">대기열</th><th class="num">처리 중</th><th class="num">윈도우 사용</th>
+      <th>서킷</th><th class="num">플랫폼 호출</th><th class="num">캐시</th><th class="num">병합</th>
+      <th class="num">재시도</th><th class="num">429 수신</th></tr></thead><tbody>` +
+    list.map((p) => `<tr>
+      <td><b>${esc(p.name)}</b></td><td>${esc(p.platform_limit)}</td><td>${esc(p.gateway_limit)}</td><td>${esc(p.price)}</td>
+      <td class="num">${p.error_rate == null ? "-" : p.error_rate >= 0.5
+        ? `<span class="pill bad">${Math.round(p.error_rate * 100)}%</span>`
+        : p.error_rate > 0.1 ? `<span class="pill warn">${Math.round(p.error_rate * 100)}%</span>` : `${Math.round(p.error_rate * 100)}%`}</td>
+      <td class="num">${p.waiting ? `<span class="pill warn">${p.waiting}</span>` : 0}</td>
+      <td class="num">${p.in_flight}</td>
+      <td class="num">${p.window_max ? `${p.window_used} / ${p.window_max}` : "-"}</td>
+      <td>${circuitPill(p.circuit)}</td>
+      <td class="num">${num(p.origin_calls)}</td><td class="num">${num(p.cache_hits)}</td><td class="num">${num(p.coalesced)}</td>
+      <td class="num">${num(p.retries)}</td><td class="num">${num(p.platform_429)}</td></tr>`).join("") + "</tbody>";
+}
+
+function renderUsers(users, count) {
+  if (!users.some((u) => u.today.calls)) {
+    $("users").innerHTML = `<tbody><tr><td class="empty">아직 사용 기록이 없습니다. (직원 ${count}명)</td></tr></tbody>`;
+    return;
+  }
+  $("users").innerHTML = `<thead><tr><th>직원</th><th>부서</th><th class="num">호출</th><th class="num">실패</th>
+      <th class="num">캐시</th><th class="num">비용</th><th>예산 사용</th><th>키</th></tr></thead><tbody>` +
+    users.filter((u) => u.today.calls).map((u) => {
+      const pct = Math.min(100, u.today.cost / u.budget_krw * 100);
+      return `<tr><td><b>${esc(u.name)}</b> <span class="muted">${esc(u.id)}</span></td><td>${esc(u.dept)}</td>
+        <td class="num">${num(u.today.calls)}</td><td class="num">${u.today.errors ? `<span style="color:var(--bad)">${num(u.today.errors)}</span>` : 0}</td>
+        <td class="num">${num(u.today.cached)}</td><td class="num">${won(u.today.cost)}</td>
+        <td><span class="bar"><div style="width:${pct}%"></div></span> <span class="muted">${pct.toFixed(0)}%</span></td>
+        <td>${u.active ? `<span class="pill ok">활성</span>` : `<span class="pill bad">폐기</span>`}</td></tr>`;
+    }).join("") + "</tbody>";
+}
+
+function renderLogs(logs) {
+  if (!logs.length) {
+    $("logs").innerHTML = `<tbody><tr><td class="empty">요청이 들어오면 여기에 표시됩니다.</td></tr></tbody>`;
+    return;
+  }
+  $("logs").innerHTML = `<thead><tr><th>시간</th><th>직원</th><th>플랫폼</th><th>결과</th><th>출처</th>
+      <th class="num">대기</th><th class="num">응답</th></tr></thead><tbody>` +
+    logs.map((l) => {
+      const ok = l.status < 300;
+      const result = ok ? `<span class="pill ok">성공</span>` : `<span class="pill bad">${esc(ERR[l.error_code] || l.error_code || l.status)}</span>`;
+      const src = l.source ? `<span class="pill ${l.source === "origin" ? "info" : "ok"}">${SOURCE[l.source]}</span>` : "";
+      return `<tr><td class="muted">${l.time}</td><td>${esc(l.user_name)}</td><td>${esc(platformNames[l.platform] || l.platform)}</td>
+        <td>${result}${l.retries ? ` <span class="muted">재시도 ${l.retries}</span>` : ""}</td><td>${src}</td>
+        <td class="num">${l.queued_ms ? dur(l.queued_ms) : "-"}</td><td class="num">${dur(l.latency_ms)}</td></tr>`;
+    }).join("") + "</tbody>";
+}
+
+function render(d) {
+  const sc = d.scenario;
+  const running = sc.status === "running";
+  if (running !== lastScenario?.running || sc.id !== lastScenario?.id) {
+    renderScenarios(running, sc.id);
+    lastScenario = { running, id: sc.id };
+  }
+  platformNames = Object.fromEntries(d.platforms.map((p) => [p.id, p.name]));
+
+  const t = d.totals;
+  $("kCalls").textContent = num(t.calls);
+  $("kRate").textContent = t.calls ? `${(t.success / t.calls * 100).toFixed(1)}%` : "-";
+  $("kCached").textContent = num(t.cached);
+  $("kCost").textContent = won(t.cost);
+
+  renderRun(sc);
+  const maxY = Math.max(5, ...(sc.timeline || []).map((b) =>
+    Math.max(b.direct_ok + b.direct_fail, b.gateway_ok + b.gateway_fail)));
+  renderLane($("laneDirect"), "direct", sc, maxY);
+  renderLane($("laneGateway"), "gateway", sc, maxY);
+  renderPlatforms(d.platforms);
+  renderUsers(d.users, d.user_count);
+  renderLogs(d.logs);
+  $("dotMock").className = "dot " + (d.mock_online ? "on" : "off");
+}
+
+async function tick() {
+  try {
+    const d = await api("/admin/dashboard");
+    $("dotGw").className = "dot on";
+    render(d);
+  } catch (e) {
+    $("dotGw").className = "dot off";
+    $("dotMock").className = "dot";
+  }
+}
+
+(async () => {
+  try { scenarios = await api("/admin/scenarios"); } catch (e) { toast("게이트웨이에 연결할 수 없습니다."); }
+  renderScenarios(false, null);
+  tick();
+  setInterval(tick, 1000);
+})();
+</script>
+</body>
+</html>
